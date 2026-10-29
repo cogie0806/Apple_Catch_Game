@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>りんごキャッチゲーム</title>
+    <link rel="icon" href="りんご.png" type="image/png">
     <style>
         body { text-align: center; background: #e0f7fa; font-family: sans-serif; margin: 0; padding: 20px; }
         canvas { background: #fff; display: block; margin: 10px auto; border: 2px solid #333; max-width: 100%; height: auto; }
@@ -30,6 +31,10 @@
         let basket = { x: 160, y: 350, width: 80, height: 20, color: "#4CAF50" };
         let apple = { x: Math.random() * 370, y: 0, radius: 20, speed: 3 };
         let score = 0;
+        
+        // 保存された最高得点を読み込む（なければ0）
+        let highScore = localStorage.getItem("appleHighScore") || 0;
+
         let rightPressed = false;
         let leftPressed = false;
 
@@ -72,6 +77,13 @@
                 apple.x >= basket.x &&
                 apple.x <= basket.x + basket.width) {
                 score++;
+                
+                // 最高得点を更新して保存
+                if (score > highScore) {
+                    highScore = score;
+                    localStorage.setItem("appleHighScore", highScore);
+                }
+
                 resetApple();
             }
             
@@ -97,10 +109,11 @@
             // りんごの画像を描く
             ctx.drawImage(appleImg, apple.x - apple.radius, apple.y - apple.radius, apple.radius * 2, apple.radius * 2);
             
-            // スコアを描く
+            // スコアと最高得点を描く
             ctx.fillStyle = "#333";
             ctx.font = "16px sans-serif";
             ctx.fillText("スコア: " + score, 10, 25);
+            ctx.fillText("さいこう: " + highScore, 10, 50);
         }
 
         function loop() {
