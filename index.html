@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>りんごキャッチゲーム</title>
+    <style>
+        body { text-align: center; background: #e0f7fa; font-family: sans-serif; margin: 0; padding: 20px; }
+        canvas { background: #fff; display: block; margin: 10px auto; border: 2px solid #333; max-width: 100%; height: auto; }
+        .btn-container { margin-top: 10px; }
+        .control-btn { font-size: 24px; padding: 10px 30px; margin: 0 10px; cursor: pointer; background: #4CAF50; color: white; border: none; border-radius: 5px; }
+        .control-btn:active { background: #388E3C; }
+    </style>
+</head>
+<body>
+    <h2>りんごキャッチゲーム</h2>
+    <p>キーボード、画面のボタン、またはタッチでかごを動かそう！</p>
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    
+    <!-- スマホ用ボタン -->
+    <div class="btn-container">
+        <button class="control-btn" id="leftBtn">←</button>
+        <button class="control-btn" id="rightBtn">→</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        let basket = { x: 160, y: 350, width: 80, height: 20, color: "#4CAF50" };
+        let apple = { x: Math.random() * 370, y: 0, radius: 20, speed: 3 };
+        let score = 0;
+        let rightPressed = false;
+        let leftPressed = false;
+
+        // りんごの画像を読み込む
+        const appleImg = new Image();
+        appleImg.src = "りんご.png";
+
+        // キーボード操作
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "ArrowRight") rightPressed = true;
+            if (e.key === "ArrowLeft") leftPressed = true;
+        });
+        document.addEventListener("keyup", (e) => {
+            if (e.key === "ArrowRight") rightPressed = false;
+            if (e.key === "ArrowLeft") leftPressed = false;
+        });
+
+        // 画面ボタン操作（スマホ用）
+        const leftBtn = document.getElementById("leftBtn");
+        const rightBtn = document.getElementById("rightBtn");
+
+        leftBtn.addEventListener("mousedown", () => leftPressed = true);
+        leftBtn.addEventListener("mouseup", () => leftPressed = false);
+        leftBtn.addEventListener("touchstart", (e) => { leftPressed = true; e.preventDefault(); });
+        leftBtn.addEventListener("touchend", (e) => { leftPressed = false; e.preventDefault(); });
+
+        rightBtn.addEventListener("mousedown", () => rightPressed = true);
+        rightBtn.addEventListener("mouseup", () => rightPressed = false);
+        rightBtn.addEventListener("touchstart", (e) => { rightPressed = true; e.preventDefault(); });
+        rightBtn.addEventListener("touchend", (e) => { rightPressed = false; e.preventDefault(); });
+
+        function update() {
+            if (rightPressed && basket.x < canvas.width - basket.width) basket.x += 6;
+            if (leftPressed && basket.x > 0) basket.x -= 6;
+
+            apple.y += apple.speed;
+            
+            // キャッチ判定
+            if (apple.y + apple.radius >= basket.y &&
+                apple.x >= basket.x &&
+                apple.x <= basket.x + basket.width) {
+                score++;
+                resetApple();
+            }
+            
+            // 下まで落ちたとき
+            if (apple.y > canvas.height) {
+                resetApple();
+            }
+        }
+
+        function resetApple() {
+            apple.y = 0;
+            apple.x = Math.random() * (canvas.width - 40) + 20;
+            apple.speed += 0.1;
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // かごを描く
+            ctx.fillStyle = basket.color;
+            ctx.fillRect(basket.x, basket.y, basket.width, basket.height);
+            
+            // りんごの画像を描く
+            ctx.drawImage(appleImg, apple.x - apple.radius, apple.y - apple.radius, apple.radius * 2, apple.radius * 2);
+            
+            // スコアを描く
+            ctx.fillStyle = "#333";
+            ctx.font = "16px sans-serif";
+            ctx.fillText("スコア: " + score, 10, 25);
+        }
+
+        function loop() {
+            update();
+            draw();
+            requestAnimationFrame(loop);
+        }
+
+        loop();
+    </script>
+</body>
+</html>
